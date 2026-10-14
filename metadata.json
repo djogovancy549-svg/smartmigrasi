@@ -1,0 +1,8 @@
+{
+  "name": "SIPEKAT NAGEKEO - Pendataan Kawasan Transmigrasi",
+  "description": "Sistem Informasi Pendataan Kawasan Transmigrasi Mbay & Kabupaten Nagekeo (7 Kecamatan): Ternak, Pertanian, Penduduk, dan Peta Potensi Geospasial Interaktif terintegrasi Google Sheets Webhook.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

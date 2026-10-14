@@ -1,0 +1,715 @@
+import { KecamatanData, TransmigrasiUPT, SheetEntry } from '../types';
+
+export const KECAMATAN_NAGEKEO: KecamatanData[] = [
+  {
+    id: 'aesesa',
+    nama: 'Aesesa',
+    luasKm2: 169.34,
+    luasHa: 16934,
+    lahanProduktifHa: 12450,
+    ibukota: 'Mbay (Pusat Pemerintahan Kabupaten)',
+    jumlahDesa: 18,
+    pusatTransmigrasi: true,
+    uptList: ['UPT Marapokot', 'UPT Mbay Kiri', 'UPT Mbay Kanan', 'UPT Tonggurambang', 'UPT Aeramo'],
+    center: [-8.5638, 121.2825],
+    polygonCoords: [
+      [-8.5000, 121.2400],
+      [-8.4900, 121.3200],
+      [-8.5400, 121.3600],
+      [-8.6000, 121.3300],
+      [-8.6200, 121.2600],
+      [-8.5800, 121.2200],
+      [-8.5200, 121.2300]
+    ],
+    demografi: {
+      totalPenduduk: 43120,
+      totalKK: 10850,
+      transmigranJiwa: 12458,
+      transmigranKK: 3124,
+      pendudukAsliJiwa: 30662,
+      usia0_14Pct: 28,
+      usia15_64Pct: 64,
+      usia65PlusPct: 8,
+      pria: 21680,
+      wanita: 21440,
+      kepadatanPerKm2: 254.6
+    },
+    ternak: {
+      sapi: 14250,
+      kerbau: 3420,
+      kambing: 18900,
+      babi: 12400,
+      kuda: 580,
+      unggas: 68000,
+      produksiDagingTon: 940.5,
+      sentraUtama: 'Sapi Potong & Kambing Savana Danga'
+    },
+    pertanian: {
+      padiSawahHa: 4120,
+      padiProduksiTon: 24720,
+      jagungHa: 3250,
+      jagungProduksiTon: 16250,
+      hortikulturaHa: 990,
+      komoditasHorti: ['Bawang Merah', 'Cabai Rawit', 'Tomat', 'Semangka', 'Melon'],
+      perkebunanHa: 1840,
+      komoditasKebun: ['Kelapa Dalam', 'Jambu Mete', 'Asam Jawa'],
+      irigasiTerlayaniHa: 3850
+    },
+    lahan: {
+      pertanianPct: 45,
+      perkebunanPct: 28,
+      pemukimanPct: 12,
+      hutanPct: 10,
+      lainnyaPct: 5
+    },
+    infrastruktur: {
+      panjangJalanKm: 128,
+      luasIrigasiHa: 3850,
+      sekolahUnit: 24,
+      kesehatanUnit: 6,
+      pasarUnit: 4,
+      kantorDesaUnit: 18,
+      poktanUnit: 64
+    },
+    deskripsi: 'Jantung kawasan transmigrasi Mbay dengan Daerah Irigasi Sutera Mbay sebagai lumbung pangan utama Provinsi Nusa Tenggara Timur. Terhubung dengan Pelabuhan Marapokot.',
+    komoditasUnggulan: ['Padi Sawah Irigasi Sutera', 'Jagung Hibrida', 'Bawang Merah Mbay', 'Sapi Potong Brahman/Bali', 'Semangka Marapokot']
+  },
+  {
+    id: 'aesesa-selatan',
+    nama: 'Aesesa Selatan',
+    luasKm2: 147.25,
+    luasHa: 14725,
+    lahanProduktifHa: 9800,
+    ibukota: 'Jerebuu / Lape',
+    jumlahDesa: 7,
+    pusatTransmigrasi: false,
+    uptList: ['Kawasan Penyangga Sub-DAS Aesesa'],
+    center: [-8.6600, 121.2900],
+    polygonCoords: [
+      [-8.6000, 121.3300],
+      [-8.6400, 121.3500],
+      [-8.7100, 121.3200],
+      [-8.7000, 121.2600],
+      [-8.6200, 121.2600]
+    ],
+    demografi: {
+      totalPenduduk: 10950,
+      totalKK: 2740,
+      transmigranJiwa: 2150,
+      transmigranKK: 520,
+      pendudukAsliJiwa: 8800,
+      usia0_14Pct: 27,
+      usia15_64Pct: 65,
+      usia65PlusPct: 8,
+      pria: 5520,
+      wanita: 5430,
+      kepadatanPerKm2: 74.4
+    },
+    ternak: {
+      sapi: 7800,
+      kerbau: 1250,
+      kambing: 6400,
+      babi: 5100,
+      kuda: 310,
+      unggas: 22000,
+      produksiDagingTon: 340.2,
+      sentraUtama: 'Padang Penggembalaan Sapi Rendu'
+    },
+    pertanian: {
+      padiSawahHa: 850,
+      padiProduksiTon: 4250,
+      jagungHa: 1820,
+      jagungProduksiTon: 7280,
+      hortikulturaHa: 380,
+      komoditasHorti: ['Pisang Berangan', 'Cabai', 'Ubi Kayu'],
+      perkebunanHa: 2540,
+      komoditasKebun: ['Kemiri', 'Kakao', 'Asam'],
+      irigasiTerlayaniHa: 720
+    },
+    lahan: {
+      pertanianPct: 36,
+      perkebunanPct: 34,
+      pemukimanPct: 8,
+      hutanPct: 18,
+      lainnyaPct: 4
+    },
+    infrastruktur: {
+      panjangJalanKm: 76,
+      luasIrigasiHa: 720,
+      sekolahUnit: 14,
+      kesehatanUnit: 3,
+      pasarUnit: 1,
+      kantorDesaUnit: 7,
+      poktanUnit: 28
+    },
+    deskripsi: 'Daerah perbukitan subur penyangga DAS Aesesa, kaya potensi perkebunan kemiri, kakao, dan savana peternakan sapi potong.',
+    komoditasUnggulan: ['Kemiri Kupas', 'Kakao Fermentasi', 'Sapi Savana Rendu', 'Jagung Komposit']
+  },
+  {
+    id: 'boawae',
+    nama: 'Boawae',
+    luasKm2: 334.82,
+    luasHa: 33482,
+    lahanProduktifHa: 22100,
+    ibukota: 'Boawae',
+    jumlahDesa: 27,
+    pusatTransmigrasi: false,
+    uptList: ['Kawasan Transmigrasi Lokal Lereng Ebulobo'],
+    center: [-8.7290, 121.1980],
+    polygonCoords: [
+      [-8.6200, 121.2600],
+      [-8.7000, 121.2600],
+      [-8.7800, 121.2400],
+      [-8.8000, 121.1700],
+      [-8.7400, 121.1200],
+      [-8.6700, 121.1600],
+      [-8.6200, 121.2200]
+    ],
+    demografi: {
+      totalPenduduk: 38420,
+      totalKK: 9620,
+      transmigranJiwa: 3450,
+      transmigranKK: 840,
+      pendudukAsliJiwa: 34970,
+      usia0_14Pct: 29,
+      usia15_64Pct: 62,
+      usia65PlusPct: 9,
+      pria: 19120,
+      wanita: 19300,
+      kepadatanPerKm2: 114.8
+    },
+    ternak: {
+      sapi: 9200,
+      kerbau: 1840,
+      kambing: 7600,
+      babi: 19800,
+      kuda: 840,
+      unggas: 54000,
+      produksiDagingTon: 810.0,
+      sentraUtama: 'Sentra Peternakan Babi & Kuda Tradisional'
+    },
+    pertanian: {
+      padiSawahHa: 1400,
+      padiProduksiTon: 7700,
+      jagungHa: 2100,
+      jagungProduksiTon: 9450,
+      hortikulturaHa: 850,
+      komoditasHorti: ['Sayur Dataran Tinggi', 'Tomat Ebulobo', 'Wortel'],
+      perkebunanHa: 6150,
+      komoditasKebun: ['Kopi Robusta', 'Kakao', 'Cengkeh', 'Pala'],
+      irigasiTerlayaniHa: 1150
+    },
+    lahan: {
+      pertanianPct: 32,
+      perkebunanPct: 42,
+      pemukimanPct: 10,
+      hutanPct: 14,
+      lainnyaPct: 2
+    },
+    infrastruktur: {
+      panjangJalanKm: 165,
+      luasIrigasiHa: 1150,
+      sekolahUnit: 38,
+      kesehatanUnit: 8,
+      pasarUnit: 3,
+      kantorDesaUnit: 27,
+      poktanUnit: 78
+    },
+    deskripsi: 'Kecamatan terluas di Nagekeo di kaki Gunung Berapi Ebulobo. Sentra perkebunan kopi, cengkeh, babi unggul, dan hortikultura sayuran.',
+    komoditasUnggulan: ['Kopi Robusta Boawae', 'Ternak Babi Unggul', 'Kakao Organik', 'Cengkeh']
+  },
+  {
+    id: 'mauponggo',
+    nama: 'Mauponggo',
+    luasKm2: 104.93,
+    luasHa: 10493,
+    lahanProduktifHa: 7600,
+    ibukota: 'Mauponggo',
+    jumlahDesa: 21,
+    pusatTransmigrasi: false,
+    uptList: ['Kawasan Pesisir Rempah Selatan'],
+    center: [-8.8055, 121.2290],
+    polygonCoords: [
+      [-8.7800, 121.2400],
+      [-8.8400, 121.2700],
+      [-8.8700, 121.2300],
+      [-8.8500, 121.1800],
+      [-8.8000, 121.1700]
+    ],
+    demografi: {
+      totalPenduduk: 23890,
+      totalKK: 5980,
+      transmigranJiwa: 1420,
+      transmigranKK: 340,
+      pendudukAsliJiwa: 22470,
+      usia0_14Pct: 26,
+      usia15_64Pct: 65,
+      usia65PlusPct: 9,
+      pria: 11980,
+      wanita: 11910,
+      kepadatanPerKm2: 227.7
+    },
+    ternak: {
+      sapi: 4800,
+      kerbau: 620,
+      kambing: 5200,
+      babi: 14200,
+      kuda: 210,
+      unggas: 38000,
+      produksiDagingTon: 490.5,
+      sentraUtama: 'Babi Ras & Ayam Kampung'
+    },
+    pertanian: {
+      padiSawahHa: 620,
+      padiProduksiTon: 2790,
+      jagungHa: 1450,
+      jagungProduksiTon: 5800,
+      hortikulturaHa: 490,
+      komoditasHorti: ['Pisang Kepok Nagekeo', 'Ubi Talas', 'Alpukat'],
+      perkebunanHa: 4650,
+      komoditasKebun: ['Cengkeh Wangi', 'Pala Banda', 'Kelapa Dalam', 'Vanili'],
+      irigasiTerlayaniHa: 480
+    },
+    lahan: {
+      pertanianPct: 24,
+      perkebunanPct: 52,
+      pemukimanPct: 11,
+      hutanPct: 11,
+      lainnyaPct: 2
+    },
+    infrastruktur: {
+      panjangJalanKm: 92,
+      luasIrigasiHa: 480,
+      sekolahUnit: 26,
+      kesehatanUnit: 5,
+      pasarUnit: 2,
+      kantorDesaUnit: 21,
+      poktanUnit: 44
+    },
+    deskripsi: 'Sentra rempah-rempah terkemuka di pesisir Laut Sawu. Cengkeh, pala, dan kelapa dalam tumbuh subur di lereng selatan Ebulobo.',
+    komoditasUnggulan: ['Cengkeh Mauponggo', 'Pala Berkualitas', 'Pisang Kepok', 'Minyak Kelapa Tradisional']
+  },
+  {
+    id: 'nangaroro',
+    nama: 'Nangaroro',
+    luasKm2: 238.41,
+    luasHa: 23841,
+    lahanProduktifHa: 14200,
+    ibukota: 'Nangaroro',
+    jumlahDesa: 19,
+    pusatTransmigrasi: false,
+    uptList: ['Kawasan Trans Nelayan & Ternak Pesisir'],
+    center: [-8.7610, 121.3650],
+    polygonCoords: [
+      [-8.7100, 121.3200],
+      [-8.7000, 121.4200],
+      [-8.7800, 121.4400],
+      [-8.8300, 121.3900],
+      [-8.8000, 121.3400],
+      [-8.7400, 121.3100]
+    ],
+    demografi: {
+      totalPenduduk: 21450,
+      totalKK: 5360,
+      transmigranJiwa: 2680,
+      transmigranKK: 640,
+      pendudukAsliJiwa: 18770,
+      usia0_14Pct: 28,
+      usia15_64Pct: 63,
+      usia65PlusPct: 9,
+      pria: 10760,
+      wanita: 10690,
+      kepadatanPerKm2: 90.0
+    },
+    ternak: {
+      sapi: 8600,
+      kerbau: 1480,
+      kambing: 11200,
+      babi: 9400,
+      kuda: 410,
+      unggas: 33000,
+      produksiDagingTon: 520.0,
+      sentraUtama: 'Kambing Kacang & Sapi Potong Pesisir'
+    },
+    pertanian: {
+      padiSawahHa: 950,
+      padiProduksiTon: 4750,
+      jagungHa: 2800,
+      jagungProduksiTon: 11200,
+      hortikulturaHa: 410,
+      komoditasHorti: ['Kacang Tanah', 'Cabai Rawit', 'Bawang'],
+      perkebunanHa: 3850,
+      komoditasKebun: ['Kelapa', 'Asam Jawa Super', 'Jambu Mete'],
+      irigasiTerlayaniHa: 780
+    },
+    lahan: {
+      pertanianPct: 38,
+      perkebunanPct: 35,
+      pemukimanPct: 9,
+      hutanPct: 15,
+      lainnyaPct: 3
+    },
+    infrastruktur: {
+      panjangJalanKm: 114,
+      luasIrigasiHa: 780,
+      sekolahUnit: 25,
+      kesehatanUnit: 4,
+      pasarUnit: 2,
+      kantorDesaUnit: 19,
+      poktanUnit: 52
+    },
+    deskripsi: 'Gerbang timur Kabupaten Nagekeo berbatasan dengan Ende. Memiliki padang savana luas untuk peternakan ternak besar dan komoditas asam jawa.',
+    komoditasUnggulan: ['Kambing Nangaroro', 'Asam Jawa Glondong', 'Jagung Hibrida', 'Garam Laut Rakyat']
+  },
+  {
+    id: 'keo-tengah',
+    nama: 'Keo Tengah',
+    luasKm2: 94.67,
+    luasHa: 9467,
+    lahanProduktifHa: 6800,
+    ibukota: 'Maikambira',
+    jumlahDesa: 16,
+    pusatTransmigrasi: false,
+    uptList: ['Kawasan Trans Komunitas Bahari Keo'],
+    center: [-8.8520, 121.3100],
+    polygonCoords: [
+      [-8.8000, 121.3400],
+      [-8.8300, 121.3900],
+      [-8.8900, 121.3500],
+      [-8.8900, 121.2800],
+      [-8.8400, 121.2700]
+    ],
+    demografi: {
+      totalPenduduk: 15310,
+      totalKK: 3820,
+      transmigranJiwa: 890,
+      transmigranKK: 210,
+      pendudukAsliJiwa: 14420,
+      usia0_14Pct: 27,
+      usia15_64Pct: 64,
+      usia65PlusPct: 9,
+      pria: 7690,
+      wanita: 7620,
+      kepadatanPerKm2: 161.7
+    },
+    ternak: {
+      sapi: 3400,
+      kerbau: 540,
+      kambing: 4800,
+      babi: 8900,
+      kuda: 180,
+      unggas: 24000,
+      produksiDagingTon: 310.2,
+      sentraUtama: 'Ternak Babi Adat & Unggas'
+    },
+    pertanian: {
+      padiSawahHa: 380,
+      padiProduksiTon: 1520,
+      jagungHa: 1250,
+      jagungProduksiTon: 4750,
+      hortikulturaHa: 320,
+      komoditasHorti: ['Pisang Raja', 'Ubi Jalar', 'Sayuran Pesisir'],
+      perkebunanHa: 3620,
+      komoditasKebun: ['Kelapa Dalam Pesisir', 'Cengkeh', 'Kakao', 'Vanili'],
+      irigasiTerlayaniHa: 260
+    },
+    lahan: {
+      pertanianPct: 26,
+      perkebunanPct: 48,
+      pemukimanPct: 12,
+      hutanPct: 12,
+      lainnyaPct: 2
+    },
+    infrastruktur: {
+      panjangJalanKm: 68,
+      luasIrigasiHa: 260,
+      sekolahUnit: 19,
+      kesehatanUnit: 3,
+      pasarUnit: 1,
+      kantorDesaUnit: 16,
+      poktanUnit: 36
+    },
+    deskripsi: 'Kawasan pesisir pantai selatan yang kaya pohon kelapa dalam, cengkeh, dan hasil laut. Mengembangkan perpaduan agribisnis dan maritim.',
+    komoditasUnggulan: ['Kelapa Kopra Keo', 'Kakao Rakyat', 'Cengkeh Organik', 'Ikan Tongkol & Cakalang']
+  },
+  {
+    id: 'wolowae',
+    nama: 'Wolowae',
+    luasKm2: 68.17,
+    luasHa: 6817,
+    lahanProduktifHa: 4950,
+    ibukota: 'Mengkuda / Anakoli',
+    jumlahDesa: 5,
+    pusatTransmigrasi: false,
+    uptList: ['Kawasan Trans Pesisir Teluk Flores'],
+    center: [-8.5410, 121.4350],
+    polygonCoords: [
+      [-8.4900, 121.3200],
+      [-8.5000, 121.4700],
+      [-8.5800, 121.4900],
+      [-8.6000, 121.4100],
+      [-8.5400, 121.3600]
+    ],
+    demografi: {
+      totalPenduduk: 6850,
+      totalKK: 1710,
+      transmigranJiwa: 1120,
+      transmigranKK: 270,
+      pendudukAsliJiwa: 5730,
+      usia0_14Pct: 28,
+      usia15_64Pct: 64,
+      usia65PlusPct: 8,
+      pria: 3450,
+      wanita: 3400,
+      kepadatanPerKm2: 100.5
+    },
+    ternak: {
+      sapi: 4200,
+      kerbau: 480,
+      kambing: 9800,
+      babi: 2800,
+      kuda: 150,
+      unggas: 12000,
+      produksiDagingTon: 215.0,
+      sentraUtama: 'Sentra Kambing Savana Pesisir Utara'
+    },
+    pertanian: {
+      padiSawahHa: 320,
+      padiProduksiTon: 1440,
+      jagungHa: 1900,
+      jagungProduksiTon: 7600,
+      hortikulturaHa: 260,
+      komoditasHorti: ['Kacang Hijau', 'Cabai Kering', 'Semangka'],
+      perkebunanHa: 1950,
+      komoditasKebun: ['Jambu Mete Gelondong', 'Asam Jawa', 'Kelapa'],
+      irigasiTerlayaniHa: 290
+    },
+    lahan: {
+      pertanianPct: 40,
+      perkebunanPct: 32,
+      pemukimanPct: 8,
+      hutanPct: 15,
+      lainnyaPct: 5
+    },
+    infrastruktur: {
+      panjangJalanKm: 58,
+      luasIrigasiHa: 290,
+      sekolahUnit: 9,
+      kesehatanUnit: 2,
+      pasarUnit: 1,
+      kantorDesaUnit: 5,
+      poktanUnit: 18
+    },
+    deskripsi: 'Pesisir utara berhadapan dengan Laut Flores. Memiliki iklim semi-arid ideal untuk perkebunan jambu mete berkualitas ekspor dan ternak kambing.',
+    komoditasUnggulan: ['Kambing Savana Wolowae', 'Jambu Mete Gelondong', 'Kacang Hijau', 'Jagung Hibrida']
+  }
+];
+
+export const TRANSMIGRASI_UPT_LIST: TransmigrasiUPT[] = [
+  {
+    id: 'upt-marapokot',
+    nama: 'UPT Marapokot (Kawasan Maritim & Pertanian)',
+    kecamatanId: 'aesesa',
+    kecamatanNama: 'Aesesa',
+    tahunPenempatan: 1994,
+    jumlahKeluarga: 640,
+    jumlahJiwa: 2560,
+    luasLahanHa: 1850,
+    komoditasUtama: 'Padi Sawah, Semangka, dan Ternak Sapi',
+    koordinat: [-8.5120, 121.3120],
+    statusPengembangan: 'Mandiri'
+  },
+  {
+    id: 'upt-mbay-kiri',
+    nama: 'UPT Mbay Kiri (D.I. Sutera Mbay)',
+    kecamatanId: 'aesesa',
+    kecamatanNama: 'Aesesa',
+    tahunPenempatan: 1988,
+    jumlahKeluarga: 950,
+    jumlahJiwa: 3820,
+    luasLahanHa: 2400,
+    komoditasUtama: 'Padi Sawah Irigasi Teknis & Bawang Merah',
+    koordinat: [-8.5550, 121.2720],
+    statusPengembangan: 'Mandiri'
+  },
+  {
+    id: 'upt-mbay-kanan',
+    nama: 'UPT Mbay Kanan (Lumbung Pangan)',
+    kecamatanId: 'aesesa',
+    kecamatanNama: 'Aesesa',
+    tahunPenempatan: 1991,
+    jumlahKeluarga: 820,
+    jumlahJiwa: 3290,
+    luasLahanHa: 2150,
+    komoditasUtama: 'Padi Sawah, Jagung, dan Hortikultura Cabai',
+    koordinat: [-8.5720, 121.3050],
+    statusPengembangan: 'Mandiri'
+  },
+  {
+    id: 'upt-tonggurambang',
+    nama: 'UPT Tonggurambang',
+    kecamatanId: 'aesesa',
+    kecamatanNama: 'Aesesa',
+    tahunPenempatan: 1998,
+    jumlahKeluarga: 410,
+    jumlahJiwa: 1640,
+    luasLahanHa: 1100,
+    komoditasUtama: 'Jagung Hibrida & Penggembalaan Kambing Savana',
+    koordinat: [-8.5380, 121.2580],
+    statusPengembangan: 'Berkembang'
+  },
+  {
+    id: 'upt-aeramo',
+    nama: 'UPT Aeramo',
+    kecamatanId: 'aesesa',
+    kecamatanNama: 'Aesesa',
+    tahunPenempatan: 2002,
+    jumlahKeluarga: 304,
+    jumlahJiwa: 1148,
+    luasLahanHa: 950,
+    komoditasUtama: 'Bawang Merah Varietas Tajuk & Padi Sawah',
+    koordinat: [-8.5810, 121.2780],
+    statusPengembangan: 'Berkembang'
+  }
+];
+
+export const INITIAL_SHEET_DATA: SheetEntry[] = [
+  {
+    id: 'row-1',
+    timestamp: '2026-10-10 09:30:15',
+    kecamatan: 'Aesesa',
+    dusunUpt: 'UPT Mbay Kiri (Dusun 2)',
+    kategori: 'Pertanian',
+    jenisKomoditas: 'Padi Sawah Irigasi Sutera (Varietas Ciherang)',
+    jumlahPopulasi: 4120,
+    luasHa: 4120,
+    satuan: 'Hektare',
+    statusLahan: 'Produktif Beririgasi Teknis',
+    catatan: 'Musim Tanam 2 hasil panen rata-rata 6.0 ton/ha',
+    namaPencatat: 'PPL Pertanian Wilbin Aesesa 1',
+    syncedToGoogleSheet: true
+  },
+  {
+    id: 'row-2',
+    timestamp: '2026-10-11 11:15:20',
+    kecamatan: 'Aesesa',
+    dusunUpt: 'UPT Mbay Kanan',
+    kategori: 'Ternak',
+    jenisKomoditas: 'Sapi Bali & Brahman Cross',
+    jumlahPopulasi: 14250,
+    luasHa: 1200,
+    satuan: 'Ekor',
+    statusLahan: 'Padang Penggembalaan & Kandang Koloni',
+    catatan: 'Program IB (Inseminasi Buatan) aktif, bebas antraks',
+    namaPencatat: 'Petugas Medik Veteriner Distan Nagekeo',
+    syncedToGoogleSheet: true
+  },
+  {
+    id: 'row-3',
+    timestamp: '2026-10-12 14:05:42',
+    kecamatan: 'Boawae',
+    dusunUpt: 'Desa Raja / Lereng Ebulobo',
+    kategori: 'Pertanian',
+    jenisKomoditas: 'Kopi Robusta & Cengkeh Ebulobo',
+    jumlahPopulasi: 1850,
+    luasHa: 1120,
+    satuan: 'Hektare',
+    statusLahan: 'Kebun Rakyat Polikultur',
+    catatan: 'Sertifikasi Indikasi Geografis kopi sedang berjalan',
+    namaPencatat: 'Mantri Tani Boawae',
+    syncedToGoogleSheet: true
+  },
+  {
+    id: 'row-4',
+    timestamp: '2026-10-12 16:40:10',
+    kecamatan: 'Mauponggo',
+    dusunUpt: 'Pesisir Mauponggo',
+    kategori: 'Pertanian',
+    jenisKomoditas: 'Cengkeh Wangi & Pala Banda',
+    jumlahPopulasi: 2770,
+    luasHa: 2770,
+    satuan: 'Hektare',
+    statusLahan: 'Agroforestri Tradisional',
+    catatan: 'Hasil panen diekspor lewat Surabaya dan Makassar',
+    namaPencatat: 'Koordinator BPP Mauponggo',
+    syncedToGoogleSheet: true
+  },
+  {
+    id: 'row-5',
+    timestamp: '2026-10-13 08:20:00',
+    kecamatan: 'Wolowae',
+    dusunUpt: 'Desa Anakoli & Mengkuda',
+    kategori: 'Ternak',
+    jenisKomoditas: 'Kambing Kacang & Boer',
+    jumlahPopulasi: 9800,
+    luasHa: 850,
+    satuan: 'Ekor',
+    statusLahan: 'Savana Penggembalaan Bebas',
+    catatan: 'Kebutuhan pasar ternak Ende dan Bajawa disuplai dari sini',
+    namaPencatat: 'Petugas Lapangan Peternakan Wolowae',
+    syncedToGoogleSheet: true
+  },
+  {
+    id: 'row-6',
+    timestamp: '2026-10-13 10:45:18',
+    kecamatan: 'Aesesa',
+    dusunUpt: 'UPT Marapokot',
+    kategori: 'Kependudukan',
+    jenisKomoditas: 'Keluarga Transmigran Mandiri',
+    jumlahPopulasi: 2560,
+    luasHa: 1850,
+    satuan: 'Jiwa (640 KK)',
+    statusLahan: 'SHM Transmigrasi Tuntas',
+    catatan: 'Tingkat kepemilikan sertifikat lahan 98.4%',
+    namaPencatat: 'Disnakertrans Kab. Nagekeo',
+    syncedToGoogleSheet: true
+  },
+  {
+    id: 'row-7',
+    timestamp: '2026-10-13 15:10:30',
+    kecamatan: 'Nangaroro',
+    dusunUpt: 'Desa Tonggo & Woewutu',
+    kategori: 'Pertanian',
+    jenisKomoditas: 'Jagung Hibrida & Asam Jawa',
+    jumlahPopulasi: 3620,
+    luasHa: 3620,
+    satuan: 'Hektare',
+    statusLahan: 'Lahan Kering Produktif',
+    catatan: 'Program Tanam Jagung Panen Sapi (TJPS) NTT',
+    namaPencatat: 'PPL Nangaroro',
+    syncedToGoogleSheet: true
+  }
+];
+
+export const TOTAL_KABUPATEN_NAGEKEO = {
+  totalPenduduk: 163090,
+  totalKK: 40080,
+  luasWilayahKm2: 1416.96,
+  luasWilayahHa: 141696,
+  lahanProduktifHa: 77900,
+  luasIrigasiHa: 7530,
+  totalSapi: 52250,
+  totalKerbau: 9550,
+  totalKambing: 74100,
+  totalBabi: 73000,
+  totalKuda: 2630,
+  totalUnggas: 291000,
+  totalPadiHa: 9240,
+  totalJagungHa: 14470,
+  totalProduksiPadiTon: 52620,
+  totalProduksiJagungTon: 62260,
+  jumlahKecamatan: 7,
+  jumlahDesa: 113,
+  // Specific Mbay Transmigration Zone highlight (as on the poster)
+  mbaySpesifik: {
+    penduduk: 12458,
+    kk: 3124,
+    luasKawasanHa: 8450,
+    lahanProduktifHa: 6210,
+    persentasePertanian: 45,
+    persentasePerkebunan: 28,
+    persentasePemukiman: 12,
+    persentaseHutan: 10,
+    persentaseLainnya: 5
+  }
+};
