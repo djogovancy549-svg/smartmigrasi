@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { ArrowRight, Check, X, Sprout, TrendingUp, Sparkles } from 'lucide-react';
+import jagungImage from '../assets/images/komoditas_jagung_mbay_1791964150945.jpg';
+import padiImage from '../assets/images/komoditas_padi_sutera_1791964151091.jpg';
+import sapiImage from '../assets/images/peternakan_sapi_nagekeo_1791964151818.jpg';
+import hortiImage from '../assets/images/hortikultura_nagekeo_1791964151891.jpg';
 
 interface CommodityModalData {
   title: string;
   category: string;
   image: string;
+  fallback: string;
   description: string;
   keyStats: { label: string; value: string }[];
   districts: string[];
@@ -18,7 +23,8 @@ export const KomoditasUnggulan: React.FC = () => {
     {
       title: 'Jagung Hibrida',
       category: 'Tanaman Pangan Utama',
-      image: '/src/assets/images/komoditas_jagung_mbay_1791964150945.jpg',
+      image: jagungImage,
+      fallback: '/images/komoditas_jagung_mbay_1791964150945.jpg',
       description: 'Komoditas utama dengan produktivitas tinggi di kawasan transmigrasi Mbay, Wolowae, dan Nangaroro. Menjadi pilar program TJPS (Tanam Jagung Panen Sapi) dengan hasil panen mencapai 5.5 - 7.0 ton/ha pipilan kering.',
       keyStats: [
         { label: 'Luas Lahan Total', value: '14.470 Hektare' },
@@ -32,7 +38,8 @@ export const KomoditasUnggulan: React.FC = () => {
     {
       title: 'Padi Sawah Irigasi Sutera',
       category: 'Lumbung Pangan Daerah',
-      image: '/src/assets/images/komoditas_padi_sutera_1791964151091.jpg',
+      image: padiImage,
+      fallback: '/images/komoditas_padi_sutera_1791964151091.jpg',
       description: 'Mendukung ketahanan pangan kawasan NTT melalui Daerah Irigasi (D.I.) Sutera Mbay seluas 3.850 Ha. Memungkinkan pola tanam padi-padi-palawija 2 hingga 3 kali dalam setahun dengan ketersediaan air terjamin dari Sungai Aesesa.',
       keyStats: [
         { label: 'Luas Sawah Irigasi', value: '4.120 Hektare' },
@@ -46,7 +53,8 @@ export const KomoditasUnggulan: React.FC = () => {
     {
       title: 'Peternakan Ternak Besar & Kecil',
       category: 'Peternakan & Savana',
-      image: '/src/assets/images/peternakan_sapi_nagekeo_1791964151818.jpg',
+      image: sapiImage,
+      fallback: '/images/peternakan_sapi_nagekeo_1791964151818.jpg',
       description: 'Kawasan savana yang luas menjadikannya lumbung ternak sapi potong (Bali & Brahman Cross), sentra kambing kacang di Wolowae & Danga, serta babi ras unggul di Boawae dan Mauponggo.',
       keyStats: [
         { label: 'Populasi Sapi', value: '52.250 Ekor' },
@@ -60,7 +68,8 @@ export const KomoditasUnggulan: React.FC = () => {
     {
       title: 'Hortikultura & Perkebunan',
       category: 'Sayuran & Rempah',
-      image: '/src/assets/images/hortikultura_nagekeo_1791964151891.jpg',
+      image: hortiImage,
+      fallback: '/images/hortikultura_nagekeo_1791964151891.jpg',
       description: 'Bawang merah tajuk Mbay yang terkenal kering dan awet, cabai rawit super pedas, semangka manis Marapokot, serta komoditas perkebunan bernilai tinggi seperti cengkeh wangi, pala, kakao, dan kopi Robusta Boawae.',
       keyStats: [
         { label: 'Bawang Merah Mbay', value: '380 Ha (Produksi 3.420 Ton)' },
@@ -109,6 +118,12 @@ export const KomoditasUnggulan: React.FC = () => {
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.includes(item.fallback)) {
+                        target.src = item.fallback;
+                      }
+                    }}
                   />
                   <div className="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-xs text-white text-[11px] font-medium px-2 py-0.5 rounded">
                     {item.category}
@@ -151,6 +166,12 @@ export const KomoditasUnggulan: React.FC = () => {
                   alt={activeModal.title}
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.src.includes(activeModal.fallback)) {
+                      target.src = activeModal.fallback;
+                    }
+                  }}
                 />
                 <button
                   onClick={() => setActiveModal(null)}

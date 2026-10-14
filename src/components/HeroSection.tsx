@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, MapPin, Users, Home, Maximize, Sprout, Layers } from 'lucide-react';
 import { TOTAL_KABUPATEN_NAGEKEO } from '../data/nagekeoData';
+import heroMbayImage from '../assets/images/hero_mbay_transmigrasi_1791964149257.jpg';
 
 interface HeroSectionProps {
   onScrollToMap: () => void;
@@ -81,10 +82,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Generated Hero Image Banner */}
             <div className="mt-6 relative rounded-xl overflow-hidden border border-slate-200/90 shadow-xs group">
               <img
-                src="/src/assets/images/hero_mbay_transmigrasi_1791964149257.jpg"
+                src={heroMbayImage}
                 alt="Persawahan Irigasi Sutera Mbay Lembah Nagekeo"
                 className="w-full h-48 sm:h-56 object-cover object-center group-hover:scale-[1.01] transition-transform duration-300"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  // Fallback to public folder path if needed
+                  const target = e.currentTarget;
+                  if (!target.src.includes('/images/hero_mbay_transmigrasi_1791964149257.jpg')) {
+                    target.src = '/images/hero_mbay_transmigrasi_1791964149257.jpg';
+                  }
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4">
                 <div className="text-white text-xs">
