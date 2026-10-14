@@ -1,19 +1,56 @@
 import React from 'react';
-import { KecamatanData } from '../types';
-import { X, Users, Wheat, Milk, Building2, MapPin, Layers, Droplets, CheckCircle2 } from 'lucide-react';
+import { KecamatanData, SheetEntry } from '../types';
+import { X, Users, Wheat, Milk, Building2, MapPin, Layers, Droplets, CheckCircle2, Plus } from 'lucide-react';
 
 interface DistrictDetailModalProps {
   kecamatan: KecamatanData | null;
   onClose: () => void;
   onInputForDistrict: (namaKec: string) => void;
+  entries: SheetEntry[];
 }
 
 export const DistrictDetailModal: React.FC<DistrictDetailModalProps> = ({
   kecamatan,
   onClose,
-  onInputForDistrict
+  onInputForDistrict,
+  entries
 }) => {
   if (!kecamatan) return null;
+
+  const districtEntries = entries.filter(
+    (e) => (e.kecamatan || '').toLowerCase() === kecamatan.nama.toLowerCase()
+  );
+
+  const totalPenduduk = districtEntries
+    .filter((e) => e.kategori === 'Kependudukan')
+    .reduce((sum, e) => sum + (e.jumlahPopulasi || 0), 0);
+
+  const totalKK = districtEntries
+    .filter((e) => e.kategori === 'Kependudukan' && (e.satuan || '').toLowerCase().includes('kk'))
+    .reduce((sum, e) => sum + (e.jumlahPopulasi || 0), 0);
+
+  const totalLahanHa = districtEntries.reduce((sum, e) => sum + (e.luasHa || 0), 0);
+
+  const countAnimal = (kw: string) => {
+    return districtEntries
+      .filter((e) => e.kategori === 'Ternak' && (e.jenisKomoditas || '').toLowerCase().includes(kw))
+      .reduce((sum, e) => sum + (e.jumlahPopulasi || 0), 0);
+  };
+
+  const sapi = countAnimal('sapi');
+  const kambing = countAnimal('kambing');
+  const babi = countAnimal('babi');
+  const kerbau = countAnimal('kerbau');
+  const kuda = countAnimal('kuda');
+  const unggas = countAnimal('unggas') + countAnimal('ayam') + countAnimal('bebek');
+
+  const padiHa = districtEntries
+    .filter((e) => e.kategori === 'Pertanian' && (e.jenisKomoditas || '').toLowerCase().includes('padi'))
+    .reduce((sum, e) => sum + (e.luasHa || 0), 0);
+
+  const jagungHa = districtEntries
+    .filter((e) => e.kategori === 'Pertanian' && (e.jenisKomoditas || '').toLowerCase().includes('jagung'))
+    .reduce((sum, e) => sum + (e.luasHa || 0), 0);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
@@ -37,7 +74,7 @@ export const DistrictDetailModal: React.FC<DistrictDetailModalProps> = ({
                 )}
               </div>
               <p className="text-xs text-slate-500">
-                Ibukota: {kecamatan.ibukota} · {kecamatan.jumlahDesa} Desa/Kelurahan
+                Ibukota: {kecamatan.ibukota} · Luas Geografis: {kecamatan.luasKm2} km² · {districtEntries.length} Data Terdata
               </p>
             </div>
           </div>
@@ -52,179 +89,125 @@ export const DistrictDetailModal: React.FC<DistrictDetailModalProps> = ({
 
         <div className="p-6 space-y-6 text-xs">
           
-          {/* Deskripsi Wilayah */}
-          <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl text-emerald-950 leading-relaxed">
-            {kecamatan.deskripsi}
-          </div>
-
-          {/* Quick Stats Grid */}
+          {/* Quick Stats Grid from live entries */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-              <span className="text-slate-500 text-[11px]">Luas Wilayah</span>
+              <span className="text-slate-500 text-[11px]">Luas Lahan Terdata</span>
               <div className="text-base font-bold tabular-nums text-slate-900 mt-0.5">
-                {kecamatan.luasHa.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-500">Ha</span>
+                {totalLahanHa.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-500">Ha</span>
               </div>
-              <div className="text-[10px] text-slate-400">({kecamatan.luasKm2} km²)</div>
+              <div className="text-[10px] text-slate-400">{totalLahanHa > 0 ? 'Terekam di sistem' : 'Belum ada input'}</div>
             </div>
 
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-              <span className="text-slate-500 text-[11px]">Lahan Produktif</span>
-              <div className="text-base font-bold tabular-nums text-emerald-700 mt-0.5">
-                {kecamatan.lahanProduktifHa.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-500">Ha</span>
-              </div>
-              <div className="text-[10px] text-emerald-600 font-medium">{Math.round((kecamatan.lahanProduktifHa / kecamatan.luasHa) * 100)}% dari luas</div>
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-              <span className="text-slate-500 text-[11px]">Total Penduduk</span>
+              <span className="text-slate-500 text-[11px]">Penduduk Terdata</span>
               <div className="text-base font-bold tabular-nums text-slate-900 mt-0.5">
-                {kecamatan.demografi.totalPenduduk.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-500">jiwa</span>
+                {totalPenduduk.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-500">jiwa</span>
               </div>
-              <div className="text-[10px] text-slate-500 font-mono tabular-nums">{kecamatan.demografi.kepadatanPerKm2} jiwa/km²</div>
+              <div className="text-[10px] text-slate-400">{totalPenduduk > 0 ? 'Terekam di sistem' : 'Belum ada input'}</div>
             </div>
 
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
               <span className="text-slate-500 text-[11px]">Kepala Keluarga</span>
               <div className="text-base font-bold tabular-nums text-slate-900 mt-0.5">
-                {kecamatan.demografi.totalKK.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-500">KK</span>
+                {totalKK.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-500">KK</span>
               </div>
-              <div className="text-[10px] text-slate-400">Rata-rata 4 jiwa/KK</div>
+              <div className="text-[10px] text-slate-400">{totalKK > 0 ? 'Terekam di sistem' : 'Belum ada input'}</div>
+            </div>
+
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+              <span className="text-slate-500 text-[11px]">Catatan Lapangan</span>
+              <div className="text-base font-bold tabular-nums text-emerald-700 mt-0.5">
+                {districtEntries.length} <span className="text-xs font-normal text-slate-500">entri</span>
+              </div>
+              <div className="text-[10px] text-emerald-600 font-medium">Tersinkron Sheet</div>
             </div>
           </div>
 
-          {/* Sektor Peternakan Detail */}
+          {/* Sektor Peternakan Terdata */}
           <div className="border border-slate-200 rounded-xl p-4 bg-slate-50">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
                 <Milk className="w-4 h-4 text-emerald-700" />
-                <span>Populasi & Potensi Peternakan</span>
+                <span>Populasi Peternakan Terdata (Kec. {kecamatan.nama})</span>
               </div>
-              <span className="text-[11px] text-slate-500">{kecamatan.ternak.sentraUtama}</span>
             </div>
 
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
               <div className="bg-white p-2 rounded-lg border border-slate-200">
                 <div className="text-[11px] text-slate-500">Sapi</div>
-                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{kecamatan.ternak.sapi.toLocaleString('id-ID')}</div>
+                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{sapi.toLocaleString('id-ID')}</div>
               </div>
               <div className="bg-white p-2 rounded-lg border border-slate-200">
                 <div className="text-[11px] text-slate-500">Kambing</div>
-                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{kecamatan.ternak.kambing.toLocaleString('id-ID')}</div>
+                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{kambing.toLocaleString('id-ID')}</div>
               </div>
               <div className="bg-white p-2 rounded-lg border border-slate-200">
                 <div className="text-[11px] text-slate-500">Babi</div>
-                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{kecamatan.ternak.babi.toLocaleString('id-ID')}</div>
+                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{babi.toLocaleString('id-ID')}</div>
               </div>
               <div className="bg-white p-2 rounded-lg border border-slate-200">
                 <div className="text-[11px] text-slate-500">Kerbau</div>
-                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{kecamatan.ternak.kerbau.toLocaleString('id-ID')}</div>
+                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{kerbau.toLocaleString('id-ID')}</div>
               </div>
               <div className="bg-white p-2 rounded-lg border border-slate-200">
                 <div className="text-[11px] text-slate-500">Kuda</div>
-                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{kecamatan.ternak.kuda.toLocaleString('id-ID')}</div>
+                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{kuda.toLocaleString('id-ID')}</div>
               </div>
               <div className="bg-white p-2 rounded-lg border border-slate-200">
                 <div className="text-[11px] text-slate-500">Unggas</div>
-                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{kecamatan.ternak.unggas.toLocaleString('id-ID')}</div>
+                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">{unggas.toLocaleString('id-ID')}</div>
               </div>
-            </div>
-
-            <div className="mt-3 pt-2 border-t border-slate-200 flex justify-between text-[11px] text-slate-600">
-              <span>Estimasi Produksi Daging:</span>
-              <span className="font-bold text-slate-900">{kecamatan.ternak.produksiDagingTon} Ton / Tahun</span>
             </div>
           </div>
 
-          {/* Sektor Pertanian & Irigasi Detail */}
+          {/* Sektor Pertanian Terdata */}
           <div className="border border-slate-200 rounded-xl p-4 bg-slate-50">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
                 <Wheat className="w-4 h-4 text-emerald-700" />
-                <span>Pertanian, Perkebunan, & Irigasi</span>
+                <span>Pertanian & Tanaman Pangan Terdata</span>
               </div>
-              <span className="text-[11px] text-sky-700 font-semibold">
-                Irigasi: {kecamatan.pertanian.irigasiTerlayaniHa.toLocaleString('id-ID')} Ha
-              </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
               <div className="bg-white p-2.5 rounded-lg border border-slate-200">
-                <div className="text-[11px] text-slate-500">Padi Sawah</div>
+                <div className="text-[11px] text-slate-500">Padi Sawah Terdata</div>
                 <div className="font-bold tabular-nums text-emerald-800 text-sm mt-0.5">
-                  {kecamatan.pertanian.padiSawahHa.toLocaleString('id-ID')} Ha
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  Produksi: {kecamatan.pertanian.padiProduksiTon.toLocaleString('id-ID')} ton
+                  {padiHa.toLocaleString('id-ID')} Ha
                 </div>
               </div>
 
               <div className="bg-white p-2.5 rounded-lg border border-slate-200">
-                <div className="text-[11px] text-slate-500">Jagung Hibrida</div>
+                <div className="text-[11px] text-slate-500">Jagung Terdata</div>
                 <div className="font-bold tabular-nums text-amber-700 text-sm mt-0.5">
-                  {kecamatan.pertanian.jagungHa.toLocaleString('id-ID')} Ha
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  Produksi: {kecamatan.pertanian.jagungProduksiTon.toLocaleString('id-ID')} ton
+                  {jagungHa.toLocaleString('id-ID')} Ha
                 </div>
               </div>
-
-              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
-                <div className="text-[11px] text-slate-500">Hortikultura</div>
-                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">
-                  {kecamatan.pertanian.hortikulturaHa.toLocaleString('id-ID')} Ha
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  {kecamatan.pertanian.komoditasHorti.slice(0, 2).join(', ')}
-                </div>
-              </div>
-
-              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
-                <div className="text-[11px] text-slate-500">Perkebunan</div>
-                <div className="font-bold tabular-nums text-slate-900 text-sm mt-0.5">
-                  {kecamatan.pertanian.perkebunanHa.toLocaleString('id-ID')} Ha
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  {kecamatan.pertanian.komoditasKebun.slice(0, 2).join(', ')}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-1.5 pt-2 border-t border-slate-200">
-              <span className="text-[11px] font-semibold text-slate-700 mr-1">Komoditas Andalan:</span>
-              {kecamatan.komoditasUnggulan.map((kom, i) => (
-                <span key={i} className="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded font-medium text-slate-700">
-                  {kom}
-                </span>
-              ))}
             </div>
           </div>
 
-          {/* Sarana Infrastruktur Kawasan */}
-          <div className="border border-slate-200 rounded-xl p-4 bg-slate-50">
-            <div className="flex items-center gap-2 font-bold text-slate-900 text-sm mb-3">
-              <Building2 className="w-4 h-4 text-emerald-700" />
-              <span>Infrastruktur & Kelembagaan</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-              <div className="bg-white p-2 rounded-lg border border-slate-200">
-                <div className="text-[11px] text-slate-500">Panjang Jalan</div>
-                <div className="font-bold tabular-nums text-slate-900 mt-0.5">{kecamatan.infrastruktur.panjangJalanKm} km</div>
+          {/* Daftar Catatan Riil */}
+          {districtEntries.length > 0 && (
+            <div className="border border-slate-200 rounded-xl p-4 bg-slate-50">
+              <div className="font-bold text-slate-900 text-sm mb-2">
+                Rincian Catatan Lapangan Terverifikasi:
               </div>
-              <div className="bg-white p-2 rounded-lg border border-slate-200">
-                <div className="text-[11px] text-slate-500">Sekolah</div>
-                <div className="font-bold tabular-nums text-slate-900 mt-0.5">{kecamatan.infrastruktur.sekolahUnit} unit</div>
-              </div>
-              <div className="bg-white p-2 rounded-lg border border-slate-200">
-                <div className="text-[11px] text-slate-500">Kesehatan</div>
-                <div className="font-bold tabular-nums text-slate-900 mt-0.5">{kecamatan.infrastruktur.kesehatanUnit} unit</div>
-              </div>
-              <div className="bg-white p-2 rounded-lg border border-slate-200">
-                <div className="text-[11px] text-slate-500">Kelompok Tani</div>
-                <div className="font-bold tabular-nums text-emerald-700 mt-0.5">{kecamatan.infrastruktur.poktanUnit} Poktan</div>
+              <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                {districtEntries.map((row) => (
+                  <div key={row.id} className="p-2 bg-white rounded border border-slate-200 flex justify-between items-center text-[11px]">
+                    <div>
+                      <span className="font-semibold text-slate-800">{row.jenisKomoditas}</span>
+                      <span className="text-slate-500 ml-1.5">({row.dusunUpt || row.kategori})</span>
+                    </div>
+                    <div className="font-mono font-bold text-emerald-800">
+                      {row.jumlahPopulasi} {row.satuan}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
 
           {/* Modal Footer */}
           <div className="flex items-center justify-between pt-2 border-t border-slate-200">
@@ -235,7 +218,8 @@ export const DistrictDetailModal: React.FC<DistrictDetailModalProps> = ({
               }}
               className="px-4 py-2 font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg transition-colors flex items-center gap-1.5"
             >
-              <span>+ Input Data untuk {kecamatan.nama}</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Input Data untuk {kecamatan.nama}</span>
             </button>
 
             <button

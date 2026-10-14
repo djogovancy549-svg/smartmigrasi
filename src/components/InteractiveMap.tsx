@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { KecamatanData, MapMode, TransmigrasiUPT } from '../types';
-import { KECAMATAN_NAGEKEO, TRANSMIGRASI_UPT_LIST } from '../data/nagekeoData';
-import { Layers, MapPin, Maximize2, Compass, Wheat, Milk, Users, Building, Info } from 'lucide-react';
+import { KecamatanData, MapMode, SheetEntry } from '../types';
+import { KECAMATAN_NAGEKEO } from '../data/nagekeoData';
+import { Layers, MapPin, Maximize2, Compass, Wheat, Milk, Users, Building, PlusCircle, Database } from 'lucide-react';
 
 interface InteractiveMapProps {
   onSelectKecamatan: (k: KecamatanData) => void;
   selectedKecamatan: KecamatanData;
   onOpenDetailModal: (k: KecamatanData) => void;
+  onOpenInputForDistrict: (namaKec: string) => void;
+  entries: SheetEntry[];
 }
 
 const TILE_LAYERS: Record<MapMode, { url: string; attribution: string; name: string }> = {
@@ -29,19 +31,21 @@ const TILE_LAYERS: Record<MapMode, { url: string; attribution: string; name: str
 };
 
 const COLOR_PALETTE: Record<string, string> = {
-  'aesesa': '#15803d', // Hijau tua irigasi
-  'aesesa-selatan': '#16a34a', // Hijau subur
-  'boawae': '#b45309', // Coklat gunung vulkanik
-  'mauponggo': '#0d9488', // Teal pesisir rempah
-  'nangaroro': '#ea580c', // Oranye savana
-  'keo-tengah': '#0284c7', // Biru pesisir
-  'wolowae': '#ca8a04' // Emas jambu mete
+  'aesesa': '#15803d',
+  'aesesa-selatan': '#16a34a',
+  'boawae': '#b45309',
+  'mauponggo': '#0d9488',
+  'nangaroro': '#ea580c',
+  'keo-tengah': '#0284c7',
+  'wolowae': '#ca8a04'
 };
 
 export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   onSelectKecamatan,
   selectedKecamatan,
-  onOpenDetailModal
+  onOpenDetailModal,
+  onOpenInputForDistrict,
+  entries
 }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -50,7 +54,28 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
   const [mapMode, setMapMode] = useState<MapMode>('streets');
-  const [filterLayer, setFilterLayer] = useState<'all' | 'pertanian' | 'ternak' | 'upt'>('all');
+
+  // Compute live district entries
+  const districtEntries = entries.filter(
+    (e) => (e.kecamatan || '').toLowerCase() === selectedKecamatan.nama.toLowerCase()
+  );
+
+  const pendudukTerdata = districtEntries
+    .filter((e) => e.kategori === 'Kependudukan')
+    .reduce((sum, e) => sum + (e.jumlahPopulasi || 0), 0);
+
+  const ternakTerdata = districtEntries
+    .filter((e) => e.kategori === 'Ternak')
+    .reduce((sum, e) => sum + (e.jumlahPopulasi || 0), 0);
+
+  const pertanianTerdataHa = districtEntries
+    .filter((e) => e.kategori === 'Pertanian')
+    .reduce((sum, e) => sum + (e.luasHa || 0), 0);
+
+  const totalLahanTerdataHa = districtEntries.reduce(
+    (sum, e) => sum + (e.luasHa || 0),
+    0
+  );
 
   // Initialize Map
   useEffect(() => {
@@ -68,7 +93,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
     L.control.zoom({ position: 'topleft' }).addTo(map);
 
-    // Initial tile layer
     const activeTileConfig = TILE_LAYERS[mapMode];
     const initialTile = L.tileLayer(activeTileConfig.url, {
       attribution: activeTileConfig.attribution,
@@ -104,23 +128,27 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     tileLayerRef.current = newTile;
   }, [mapMode]);
 
-  // Render Polygons and Markers
+  // Render Polygons and dynamic markers
   useEffect(() => {
     if (!mapInstanceRef.current || !geojsonLayersRef.current || !markersLayerRef.current) return;
 
     geojsonLayersRef.current.clearLayers();
     markersLayerRef.current.clearLayers();
 
-    // 1. Draw Kecamatan polygons
     KECAMATAN_NAGEKEO.forEach((kec) => {
       const isSelected = selectedKecamatan.id === kec.id;
       const baseColor = COLOR_PALETTE[kec.id] || '#15803d';
+
+      // Count user records for this kecamatan
+      const count = entries.filter(
+        (e) => (e.kecamatan || '').toLowerCase() === kec.nama.toLowerCase()
+      ).length;
 
       const polygon = L.polygon(kec.polygonCoords, {
         color: isSelected ? '#111827' : baseColor,
         weight: isSelected ? 3.5 : 1.8,
         fillColor: baseColor,
-        fillOpacity: isSelected ? 0.55 : 0.28,
+        fillOpacity: isSelected ? 0.45 : 0.2,
         dashArray: isSelected ? '' : '2'
       });
 
@@ -130,18 +158,18 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
       polygon.on('mouseover', function () {
         if (!isSelected) {
-          polygon.setStyle({ fillOpacity: 0.45, weight: 2.5 });
+          polygon.setStyle({ fillOpacity: 0.35, weight: 2.5 });
         }
       });
 
       polygon.on('mouseout', function () {
         if (!isSelected) {
-          polygon.setStyle({ fillOpacity: 0.28, weight: 1.8 });
+          polygon.setStyle({ fillOpacity: 0.2, weight: 1.8 });
         }
       });
 
       polygon.bindTooltip(
-        `<div class="text-xs font-semibold px-1 py-0.5">${kec.nama}</div><div class="text-[11px] text-slate-500">${kec.luasHa.toLocaleString('id-ID')} Ha · ${kec.demografi.totalPenduduk.toLocaleString('id-ID')} jiwa</div>`,
+        `<div class="text-xs font-semibold px-1 py-0.5">${kec.nama}</div><div class="text-[11px] text-slate-500">${count > 0 ? `${count} data terdata` : 'Belum ada data'}</div>`,
         { permanent: false, direction: 'center', className: 'map-tooltip' }
       );
 
@@ -154,10 +182,11 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           <div class="flex items-center gap-1.5 px-2 py-1 bg-white/95 backdrop-blur-xs border ${isSelected ? 'border-emerald-600 ring-2 ring-emerald-500/30' : 'border-slate-300'} rounded-lg shadow-sm whitespace-nowrap text-xs font-bold text-slate-800 transition-transform hover:scale-105">
             <span class="w-2 h-2 rounded-full" style="background-color: ${baseColor}"></span>
             <span>${kec.nama}</span>
+            ${count > 0 ? `<span class="ml-0.5 text-[10px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-semibold">${count}</span>` : ''}
           </div>
         `,
-        iconSize: [100, 24],
-        iconAnchor: [50, 12]
+        iconSize: [110, 24],
+        iconAnchor: [55, 12]
       });
 
       const centerMarker = L.marker(kec.center, { icon: centerIcon });
@@ -165,39 +194,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       markersLayerRef.current?.addLayer(centerMarker);
     });
 
-    // 2. Transmigration UPT Markers (if filter allows)
-    if (filterLayer === 'all' || filterLayer === 'upt') {
-      TRANSMIGRASI_UPT_LIST.forEach((upt) => {
-        const uptIcon = L.divIcon({
-          className: 'custom-upt-marker',
-          html: `
-            <div class="group relative flex items-center justify-center w-7 h-7 bg-emerald-600 text-white rounded-full shadow-md border-2 border-white hover:scale-110 transition-transform">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-            </div>
-          `,
-          iconSize: [28, 28],
-          iconAnchor: [14, 14]
-        });
-
-        const uptMarker = L.marker(upt.koordinat, { icon: uptIcon });
-        uptMarker.bindPopup(`
-          <div class="p-1 space-y-1.5 max-w-xs">
-            <div class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide">Kawasan Transmigrasi</div>
-            <div class="font-bold text-sm text-slate-900 leading-tight">${upt.nama}</div>
-            <div class="text-xs text-slate-600">Kecamatan: <span class="font-medium text-slate-800">${upt.kecamatanNama}</span></div>
-            <div class="grid grid-cols-2 gap-1.5 text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-200">
-              <div><span class="text-slate-500">Warga:</span> <span class="font-bold tabular-nums text-slate-800">${upt.jumlahJiwa} jiwa</span></div>
-              <div><span class="text-slate-500">Keluarga:</span> <span class="font-bold tabular-nums text-slate-800">${upt.jumlahKeluarga} KK</span></div>
-              <div class="col-span-2"><span class="text-slate-500">Lahan:</span> <span class="font-bold tabular-nums text-slate-800">${upt.luasLahanHa} Ha</span></div>
-            </div>
-            <div class="text-[11px] text-slate-600"><strong>Komoditas:</strong> ${upt.komoditasUtama}</div>
-          </div>
-        `);
-        markersLayerRef.current?.addLayer(uptMarker);
-      });
-    }
-
-  }, [selectedKecamatan, filterLayer]);
+  }, [selectedKecamatan, entries]);
 
   const resetView = () => {
     mapInstanceRef.current?.setView([-8.6700, 121.2900], 10);
@@ -221,10 +218,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               <span>Kabupaten Nagekeo</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-              Peta Interaktif Kawasan Transmigrasi & Potensi
+              Peta Geospasial Kawasan & Potensi
             </h2>
             <p className="mt-1 text-sm text-slate-600 max-w-2xl">
-              Visualisasi geospasial sebaran 7 kecamatan, jaringan irigasi Sutera Mbay, sentra peternakan, pertanian, dan UPT penempatan transmigran.
+              Visualisasi batas 7 kecamatan Kabupaten Nagekeo. Data populasi ternak, pertanian, dan penduduk terhubung secara dinamis dengan input Google Sheet.
             </p>
           </div>
 
@@ -267,48 +264,44 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-1 overflow-x-auto pb-1 max-w-full">
             <span className="text-xs font-semibold text-slate-500 mr-1 shrink-0">Kecamatan:</span>
-            {KECAMATAN_NAGEKEO.map((kec) => (
-              <button
-                key={kec.id}
-                onClick={() => focusDistrict(kec)}
-                className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors whitespace-nowrap shrink-0 ${
-                  selectedKecamatan.id === kec.id
-                    ? 'bg-slate-900 text-white font-semibold'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                {kec.nama}
-              </button>
-            ))}
+            {KECAMATAN_NAGEKEO.map((kec) => {
+              const kCount = entries.filter(
+                (e) => (e.kecamatan || '').toLowerCase() === kec.nama.toLowerCase()
+              ).length;
+              return (
+                <button
+                  key={kec.id}
+                  onClick={() => focusDistrict(kec)}
+                  className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+                    selectedKecamatan.id === kec.id
+                      ? 'bg-slate-900 text-white font-semibold'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <span>{kec.nama}</span>
+                  {kCount > 0 && (
+                    <span className="text-[10px] bg-emerald-600 text-white px-1 py-0.2 rounded-full">
+                      {kCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs">
-              <button
-                onClick={() => setFilterLayer('all')}
-                className={`px-2.5 py-1 rounded font-medium whitespace-nowrap ${filterLayer === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'}`}
-              >
-                Semua Layer
-              </button>
-              <button
-                onClick={() => setFilterLayer('upt')}
-                className={`px-2.5 py-1 rounded font-medium whitespace-nowrap ${filterLayer === 'upt' ? 'bg-white text-emerald-800 shadow-xs font-semibold' : 'text-slate-600'}`}
-              >
-                Titik UPT Trans
-              </button>
-            </div>
-
             <button
               onClick={resetView}
               title="Reset pandangan peta"
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors flex items-center gap-1 text-xs"
             >
-              <Maximize2 className="w-4 h-4" />
+              <Maximize2 className="w-3.5 h-3.5" />
+              <span>Reset Posisi</span>
             </button>
           </div>
         </div>
 
-        {/* Main Geospatial Grid (Map on Left, Detail Panels on Right like flyer) */}
+        {/* Main Geospatial Grid (Map on Left, Detail Panels on Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           {/* Map Viewport Container */}
@@ -322,287 +315,177 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             {/* Map Floating Legend (bottom left inside map) */}
             <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md p-3 rounded-lg border border-slate-200 shadow-md text-xs max-w-[210px] pointer-events-auto">
               <div className="font-bold text-slate-800 mb-2 flex items-center justify-between">
-                <span>Legenda Wilayah</span>
+                <span>7 Kecamatan Nagekeo</span>
                 <Compass className="w-3.5 h-3.5 text-slate-500" />
               </div>
               <div className="space-y-1.5 text-[11px] text-slate-600">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-xs bg-[#15803d]"></span>
-                  <span>Aesesa (Pusat Mbay)</span>
+                  <span>Aesesa (Mbay)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-xs bg-[#16a34a]"></span>
+                  <span>Aesesa Selatan</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-xs bg-[#b45309]"></span>
-                  <span>Boawae (Lereng Ebulobo)</span>
+                  <span>Boawae</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-xs bg-[#0d9488]"></span>
-                  <span>Mauponggo (Pesisir Rempah)</span>
+                  <span>Mauponggo</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-xs bg-[#ea580c]"></span>
-                  <span>Nangaroro (Savana Ternak)</span>
+                  <span>Nangaroro</span>
                 </div>
-                <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
-                  <span className="w-3 h-3 rounded-full bg-emerald-600 flex items-center justify-center text-white text-[9px] font-bold">U</span>
-                  <span>Titik Pemukiman UPT</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-xs bg-[#0284c7]"></span>
+                  <span>Keo Tengah</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-xs bg-[#ca8a04]"></span>
+                  <span>Wolowae</span>
                 </div>
               </div>
             </div>
 
-            {/* Top Right Map Overlay Quick Tip */}
             <div className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-xs px-2.5 py-1.5 rounded-lg border border-slate-200 text-[11px] text-slate-600 shadow-xs hidden sm:block">
-              Klik wilayah pada peta untuk melihat profil detail
+              Klik wilayah peta untuk melihat data terinput
             </div>
           </div>
 
-          {/* Right Sidebar: Jelajahi Kawasan + Demografi + Pemanfaatan Lahan (matching poster) */}
+          {/* Right Sidebar: Dynamic stats reflecting REAL user entries */}
           <div className="lg:col-span-4 space-y-5">
             
             {/* Jelajahi Kawasan Card */}
             <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-xs font-bold text-emerald-800 uppercase tracking-wide">
-                  Jelajahi Kawasan
+                  Data Wilayah Terpilih
                 </div>
-                <span className="text-xs text-slate-500">7 Kecamatan Nagekeo</span>
+                <span className="text-xs text-slate-500">
+                  {districtEntries.length} Data Terdata
+                </span>
               </div>
 
               <div className="mb-3">
                 <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                   <span>Kecamatan {selectedKecamatan.nama}</span>
-                  {selectedKecamatan.pusatTransmigrasi && (
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold uppercase">
-                      Pusat Mbay
-                    </span>
-                  )}
                 </h3>
-                <p className="text-xs text-slate-600 mt-1 line-clamp-2">
-                  {selectedKecamatan.deskripsi}
+                <p className="text-xs text-slate-600 mt-1">
+                  Ibukota: {selectedKecamatan.ibukota} · Luas Wilayah Geografis: {selectedKecamatan.luasKm2} km²
                 </p>
               </div>
 
-              {/* Numerical Attributes Strip */}
+              {/* Dynamic Quantitative Attributes Strip */}
               <div className="grid grid-cols-2 gap-2.5 mb-4 bg-white p-3 rounded-lg border border-slate-200/80">
                 <div>
-                  <div className="text-[11px] text-slate-500">Jumlah Penduduk</div>
+                  <div className="text-[11px] text-slate-500">Penduduk Terdata</div>
                   <div className="text-base font-bold tabular-nums text-slate-900">
-                    {selectedKecamatan.demografi.totalPenduduk.toLocaleString('id-ID')}{' '}
+                    {pendudukTerdata.toLocaleString('id-ID')}{' '}
                     <span className="text-xs font-normal text-slate-500">jiwa</span>
                   </div>
-                </div>
-
-                <div>
-                  <div className="text-[11px] text-slate-500">Kepala Keluarga</div>
-                  <div className="text-base font-bold tabular-nums text-slate-900">
-                    {selectedKecamatan.demografi.totalKK.toLocaleString('id-ID')}{' '}
-                    <span className="text-xs font-normal text-slate-500">KK</span>
+                  <div className="text-[10px] text-slate-400">
+                    {pendudukTerdata > 0 ? 'Data tersimpan' : 'Belum ada input'}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-[11px] text-slate-500">Luas Wilayah</div>
+                  <div className="text-[11px] text-slate-500">Ternak Terdata</div>
                   <div className="text-base font-bold tabular-nums text-slate-900">
-                    {selectedKecamatan.luasHa.toLocaleString('id-ID')}{' '}
-                    <span className="text-xs font-normal text-slate-500">Ha</span>
+                    {ternakTerdata.toLocaleString('id-ID')}{' '}
+                    <span className="text-xs font-normal text-slate-500">ekor</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400">
+                    {ternakTerdata > 0 ? 'Data tersimpan' : 'Belum ada input'}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-[11px] text-slate-500">Lahan Produktif</div>
+                  <div className="text-[11px] text-slate-500">Pertanian Terdata</div>
                   <div className="text-base font-bold tabular-nums text-emerald-700">
-                    {selectedKecamatan.lahanProduktifHa.toLocaleString('id-ID')}{' '}
+                    {pertanianTerdataHa.toLocaleString('id-ID')}{' '}
                     <span className="text-xs font-normal text-slate-500">Ha</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400">
+                    {pertanianTerdataHa > 0 ? 'Lahan garapan' : 'Belum ada input'}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[11px] text-slate-500">Total Luas Lahan</div>
+                  <div className="text-base font-bold tabular-nums text-slate-900">
+                    {totalLahanTerdataHa.toLocaleString('id-ID')}{' '}
+                    <span className="text-xs font-normal text-slate-500">Ha</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400">
+                    {totalLahanTerdataHa > 0 ? 'Terekam di sistem' : 'Belum ada input'}
                   </div>
                 </div>
               </div>
 
-              {/* UPT Transmigrasi info inside district */}
-              {selectedKecamatan.uptList.length > 0 && (
-                <div className="mb-4">
-                  <div className="text-[11px] font-semibold text-slate-700 mb-1.5">
-                    Kawasan UPT Transmigrasi:
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {selectedKecamatan.uptList.map((upt, i) => (
-                      <span
-                        key={i}
-                        className="text-[11px] bg-slate-200/80 text-slate-700 px-2 py-0.5 rounded font-medium"
-                      >
-                        {upt}
-                      </span>
-                    ))}
-                  </div>
+              {/* Action Buttons for this district */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => onOpenInputForDistrict(selectedKecamatan.nama)}
+                  className="w-full py-2 px-3 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>Input Data untuk Kecamatan {selectedKecamatan.nama}</span>
+                </button>
+
+                <button
+                  onClick={() => onOpenDetailModal(selectedKecamatan)}
+                  className="w-full py-2 px-3 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors flex items-center justify-center gap-1"
+                >
+                  <span>Lihat Profil Detail Wilayah</span>
+                  <span>&rarr;</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Rekapitulasi Catatan Lapangan untuk Kecamatan ini */}
+            <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
+                  <Database className="w-4 h-4 text-emerald-700" />
+                  <span>Daftar Entri Terdata ({districtEntries.length})</span>
+                </div>
+              </div>
+
+              {districtEntries.length === 0 ? (
+                <div className="text-center py-6 px-3 bg-white rounded-lg border border-slate-200 text-xs text-slate-500">
+                  <p className="font-semibold text-slate-700 mb-1">Kawasan Masih Bersih</p>
+                  <p className="text-[11px] text-slate-400">
+                    Belum ada data ternak, pertanian, atau penduduk yang dicatat untuk Kecamatan {selectedKecamatan.nama}.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {districtEntries.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-2.5 bg-white rounded-lg border border-slate-200 text-xs flex items-center justify-between"
+                    >
+                      <div>
+                        <div className="font-bold text-slate-900">{item.jenisKomoditas}</div>
+                        <div className="text-[11px] text-slate-500">
+                          {item.dusunUpt || item.kategori} · {item.namaPencatat}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold tabular-nums text-emerald-800">
+                          {item.jumlahPopulasi.toLocaleString('id-ID')} {item.satuan}
+                        </div>
+                        {item.luasHa ? (
+                          <div className="text-[10px] text-slate-400">{item.luasHa} Ha</div>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
-
-              <button
-                onClick={() => onOpenDetailModal(selectedKecamatan)}
-                className="w-full py-2 px-3 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition-colors flex items-center justify-center gap-1.5"
-              >
-                <span>Lihat Profil Detail & Potensi Lengkap</span>
-                <span>&rarr;</span>
-              </button>
-            </div>
-
-            {/* Demografi Bar Stats (matching poster) */}
-            <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
-                  <Users className="w-4 h-4 text-emerald-700" />
-                  <span>Struktur Demografi</span>
-                </div>
-                <span className="text-[11px] text-slate-500">Usia Produktif</span>
-              </div>
-
-              <div className="space-y-2.5">
-                <div>
-                  <div className="flex justify-between text-xs text-slate-600 mb-1">
-                    <span>0 - 14 tahun (Anak)</span>
-                    <span className="font-semibold tabular-nums text-slate-800">
-                      {selectedKecamatan.demografi.usia0_14Pct}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-emerald-500 h-2 rounded-full"
-                      style={{ width: `${selectedKecamatan.demografi.usia0_14Pct}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs text-slate-600 mb-1">
-                    <span className="font-medium text-slate-800">15 - 64 tahun (Usia Kerja)</span>
-                    <span className="font-bold tabular-nums text-emerald-700">
-                      {selectedKecamatan.demografi.usia15_64Pct}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-emerald-700 h-2 rounded-full"
-                      style={{ width: `${selectedKecamatan.demografi.usia15_64Pct}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs text-slate-600 mb-1">
-                    <span>&ge; 65 tahun (Lansia)</span>
-                    <span className="font-semibold tabular-nums text-slate-800">
-                      {selectedKecamatan.demografi.usia65PlusPct}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-slate-400 h-2 rounded-full"
-                      style={{ width: `${selectedKecamatan.demografi.usia65PlusPct}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Pemanfaatan Lahan Progress (matching poster exactly) */}
-            <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
-                  <Wheat className="w-4 h-4 text-emerald-700" />
-                  <span>Pemanfaatan Lahan</span>
-                </div>
-                <span className="text-[11px] text-slate-500">Kawasan {selectedKecamatan.nama}</span>
-              </div>
-
-              <div className="space-y-2.5">
-                <div>
-                  <div className="flex justify-between text-xs text-slate-700 mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-xs bg-emerald-600"></span>
-                      <span>Pertanian Pangan</span>
-                    </span>
-                    <span className="font-bold tabular-nums text-slate-900">
-                      {selectedKecamatan.lahan.pertanianPct}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-emerald-600 h-1.5 rounded-full"
-                      style={{ width: `${selectedKecamatan.lahan.pertanianPct}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs text-slate-700 mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-xs bg-amber-600"></span>
-                      <span>Perkebunan Rakyat</span>
-                    </span>
-                    <span className="font-bold tabular-nums text-slate-900">
-                      {selectedKecamatan.lahan.perkebunanPct}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-amber-600 h-1.5 rounded-full"
-                      style={{ width: `${selectedKecamatan.lahan.perkebunanPct}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs text-slate-700 mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-xs bg-sky-600"></span>
-                      <span>Pemukiman Warga</span>
-                    </span>
-                    <span className="font-bold tabular-nums text-slate-900">
-                      {selectedKecamatan.lahan.pemukimanPct}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-sky-600 h-1.5 rounded-full"
-                      style={{ width: `${selectedKecamatan.lahan.pemukimanPct}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs text-slate-700 mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-xs bg-teal-800"></span>
-                      <span>Hutan Lindung & Savana</span>
-                    </span>
-                    <span className="font-bold tabular-nums text-slate-900">
-                      {selectedKecamatan.lahan.hutanPct}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-teal-800 h-1.5 rounded-full"
-                      style={{ width: `${selectedKecamatan.lahan.hutanPct}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-xs text-slate-700 mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-xs bg-slate-400"></span>
-                      <span>Lainnya / Lahan Cadangan</span>
-                    </span>
-                    <span className="font-bold tabular-nums text-slate-900">
-                      {selectedKecamatan.lahan.lainnyaPct}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-slate-400 h-1.5 rounded-full"
-                      style={{ width: `${selectedKecamatan.lahan.lainnyaPct}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
 
           </div>

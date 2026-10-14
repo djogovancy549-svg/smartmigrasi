@@ -1,36 +1,41 @@
 import React, { useState } from 'react';
-import { ArrowRight, MapPin, Users, Home, Maximize, Sprout, Layers } from 'lucide-react';
-import { TOTAL_KABUPATEN_NAGEKEO } from '../data/nagekeoData';
+import { ArrowRight, MapPin, Users, Home, Maximize, Sprout, Layers, Plus } from 'lucide-react';
+import { SheetEntry } from '../types';
 import heroMbayImage from '../assets/images/hero_mbay_transmigrasi_1791964149257.jpg';
 
 interface HeroSectionProps {
   onScrollToMap: () => void;
   onScrollToData: () => void;
+  onOpenInputModal: () => void;
+  entries: SheetEntry[];
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   onScrollToMap,
-  onScrollToData
+  onScrollToData,
+  onOpenInputModal,
+  entries
 }) => {
   const [viewScope, setViewScope] = useState<'mbay' | 'nagekeo'>('mbay');
 
-  const stats = viewScope === 'mbay'
-    ? {
-        label: 'Kawasan Transmigrasi Mbay',
-        penduduk: TOTAL_KABUPATEN_NAGEKEO.mbaySpesifik.penduduk,
-        kk: TOTAL_KABUPATEN_NAGEKEO.mbaySpesifik.kk,
-        luas: TOTAL_KABUPATEN_NAGEKEO.mbaySpesifik.luasKawasanHa,
-        produktif: TOTAL_KABUPATEN_NAGEKEO.mbaySpesifik.lahanProduktifHa,
-        catatan: 'Pusat Kawasan Transmigrasi Prioritas Nasional (D.I. Sutera Mbay)'
-      }
-    : {
-        label: 'Total Kabupaten Nagekeo (7 Kecamatan)',
-        penduduk: TOTAL_KABUPATEN_NAGEKEO.totalPenduduk,
-        kk: TOTAL_KABUPATEN_NAGEKEO.totalKK,
-        luas: TOTAL_KABUPATEN_NAGEKEO.luasWilayahHa,
-        produktif: TOTAL_KABUPATEN_NAGEKEO.lahanProduktifHa,
-        catatan: 'Aesesa, Aesesa Selatan, Boawae, Mauponggo, Nangaroro, Keo Tengah, Wolowae'
-      };
+  // Filter entries based on scope
+  const scopedEntries = viewScope === 'mbay'
+    ? entries.filter(e => (e.kecamatan || '').toLowerCase() === 'aesesa')
+    : entries;
+
+  const totalPenduduk = scopedEntries
+    .filter(e => e.kategori === 'Kependudukan')
+    .reduce((sum, e) => sum + (e.jumlahPopulasi || 0), 0);
+
+  const totalKK = scopedEntries
+    .filter(e => e.kategori === 'Kependudukan' && (e.satuan || '').toLowerCase().includes('kk'))
+    .reduce((sum, e) => sum + (e.jumlahPopulasi || 0), 0);
+
+  const totalLuasHa = scopedEntries.reduce((sum, e) => sum + (e.luasHa || 0), 0);
+
+  const totalProduktifHa = scopedEntries
+    .filter(e => e.kategori === 'Pertanian' || e.kategori === 'Ternak')
+    .reduce((sum, e) => sum + (e.luasHa || 0), 0);
 
   return (
     <section id="hero" className="relative bg-white pt-6 pb-12 border-b border-slate-200">
@@ -62,11 +67,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               {/* Action Buttons */}
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <button
-                  onClick={onScrollToData}
+                  onClick={onOpenInputModal}
                   className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-xs transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
                 >
-                  <span>Jelajahi Data</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <Plus className="w-4 h-4" />
+                  <span>Input Data Baru</span>
                 </button>
 
                 <button
@@ -87,7 +92,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 className="w-full h-48 sm:h-56 object-cover object-center group-hover:scale-[1.01] transition-transform duration-300"
                 referrerPolicy="no-referrer"
                 onError={(e) => {
-                  // Fallback to public folder path if needed
                   const target = e.currentTarget;
                   if (!target.src.includes('/images/hero_mbay_transmigrasi_1791964149257.jpg')) {
                     target.src = '/images/hero_mbay_transmigrasi_1791964149257.jpg';
@@ -103,7 +107,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
           </div>
 
-          {/* Right Column: "Mbay dalam Angka" Card (matching flyer layout) */}
+          {/* Right Column: "Mbay dalam Angka" Card (dynamically computed from entries) */}
           <div className="lg:col-span-5 flex flex-col">
             <div className="h-full bg-slate-50 border border-slate-200 rounded-xl p-5 sm:p-6 flex flex-col justify-between shadow-xs">
               
@@ -115,7 +119,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       Mbay dalam Angka
                     </h2>
                     <p className="text-[11px] text-slate-500">
-                      Ringkasan data pokok kawasan transmigrasi
+                      Rekapitulasi data terinput ({scopedEntries.length} data tersimpan)
                     </p>
                   </div>
 
@@ -129,7 +133,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      Mbay
+                      Mbay (Aesesa)
                     </button>
                     <button
                       onClick={() => setViewScope('nagekeo')}
@@ -139,32 +143,34 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      7 Kec. Nagekeo
+                      7 Kecamatan
                     </button>
                   </div>
                 </div>
 
-                {/* Mini Stylized Map Schematic Illustration */}
+                {/* Status Box */}
                 <div className="my-4 p-3 bg-white rounded-lg border border-slate-200/90 relative overflow-hidden flex items-center justify-between">
                   <div className="text-xs space-y-1">
                     <span className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider">
-                      Fokus Kawasan
+                      Status Database
                     </span>
-                    <div className="font-bold text-slate-800">{stats.label}</div>
+                    <div className="font-bold text-slate-800">
+                      {scopedEntries.length > 0 ? `${scopedEntries.length} Entri Tercatat` : 'Aplikasi Bersih (0 Data)'}
+                    </div>
                     <div className="text-[11px] text-slate-500 max-w-[220px]">
-                      {stats.catatan}
+                      {scopedEntries.length > 0
+                        ? 'Data terverifikasi dan tersinkronisasi'
+                        : 'Siap untuk penginputan data baru'}
                     </div>
                   </div>
 
                   {/* SVG Map Schematic of Nagekeo & Mbay */}
                   <div className="w-24 h-20 bg-emerald-50 rounded border border-emerald-200/80 p-1 flex items-center justify-center shrink-0">
                     <svg viewBox="0 0 100 80" className="w-full h-full text-emerald-700 fill-emerald-100 stroke-emerald-600">
-                      {/* Stylized contours of Nagekeo coastal northern Mbay and southern Keo */}
                       <path
                         d="M20,15 Q40,5 65,10 Q85,15 90,30 Q92,50 70,68 Q50,75 30,70 Q15,60 18,40 Z"
                         strokeWidth="1.5"
                       />
-                      {/* Mbay highlighted zone in North */}
                       <path
                         d="M45,15 Q65,12 75,22 Q60,32 45,26 Z"
                         className="fill-emerald-600 stroke-emerald-800"
@@ -190,10 +196,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold tabular-nums text-slate-900">
-                        {stats.penduduk.toLocaleString('id-ID')}{' '}
+                        {totalPenduduk.toLocaleString('id-ID')}{' '}
                         <span className="text-xs font-normal text-slate-500">jiwa</span>
                       </div>
-                      <div className="text-[10px] text-emerald-700 font-medium">+2.4% tahunan</div>
+                      <div className="text-[10px] text-slate-400">
+                        {totalPenduduk > 0 ? 'Terekam di sistem' : 'Belum ada input'}
+                      </div>
                     </div>
                   </div>
 
@@ -207,10 +215,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold tabular-nums text-slate-900">
-                        {stats.kk.toLocaleString('id-ID')}{' '}
+                        {totalKK.toLocaleString('id-ID')}{' '}
                         <span className="text-xs font-normal text-slate-500">KK</span>
                       </div>
-                      <div className="text-[10px] text-emerald-700 font-medium">+1.1% tahunan</div>
+                      <div className="text-[10px] text-slate-400">
+                        {totalKK > 0 ? 'Terekam di sistem' : 'Belum ada input'}
+                      </div>
                     </div>
                   </div>
 
@@ -220,15 +230,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       <div className="w-7 h-7 rounded-md bg-emerald-50 text-emerald-700 flex items-center justify-center">
                         <Maximize className="w-4 h-4" />
                       </div>
-                      <span className="text-xs font-medium text-slate-700">Luas Kawasan</span>
+                      <span className="text-xs font-medium text-slate-700">Luas Kawasan Terdata</span>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold tabular-nums text-slate-900">
-                        {stats.luas.toLocaleString('id-ID')}{' '}
+                        {totalLuasHa.toLocaleString('id-ID')}{' '}
                         <span className="text-xs font-normal text-slate-500">hektare</span>
                       </div>
-                      <div className="text-[10px] text-slate-500">
-                        {viewScope === 'mbay' ? 'D.I. Sutera Mbay' : '1.416,96 km² total'}
+                      <div className="text-[10px] text-slate-400">
+                        {totalLuasHa > 0 ? 'Berdasarkan catatan' : 'Belum ada input'}
                       </div>
                     </div>
                   </div>
@@ -243,10 +253,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold tabular-nums text-emerald-700">
-                        {stats.produktif.toLocaleString('id-ID')}{' '}
+                        {totalProduktifHa.toLocaleString('id-ID')}{' '}
                         <span className="text-xs font-normal text-slate-500">hektare</span>
                       </div>
-                      <div className="text-[10px] text-emerald-700 font-medium">+3.6% pemanfaatan</div>
+                      <div className="text-[10px] text-slate-400">
+                        {totalProduktifHa > 0 ? 'Tani & ternak' : 'Belum ada input'}
+                      </div>
                     </div>
                   </div>
 
@@ -255,8 +267,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
               {/* Bottom footer text */}
               <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
-                <span>Sumber: Disnakertrans & BPS 2026</span>
-                <span className="text-emerald-700 font-semibold">Status: Validasi Resmi</span>
+                <span>Sumber: Google Sheet Webhook</span>
+                <span className="text-emerald-700 font-semibold">Tersinkronisasi Langsung</span>
               </div>
 
             </div>

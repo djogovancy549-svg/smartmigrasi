@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { KecamatanData, SheetEntry } from './types';
-import { KECAMATAN_NAGEKEO, INITIAL_SHEET_DATA } from './data/nagekeoData';
-import { getStoredRecords, saveStoredRecords } from './services/googleSheetService';
+import { KECAMATAN_NAGEKEO } from './data/nagekeoData';
+import { getStoredRecords, saveStoredRecords, clearAllLocalRecords } from './services/googleSheetService';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { DataUtamaKawasan } from './components/DataUtamaKawasan';
@@ -15,17 +15,38 @@ import { FooterBanner } from './components/FooterBanner';
 export default function App() {
   const [selectedKecamatan, setSelectedKecamatan] = useState<KecamatanData>(KECAMATAN_NAGEKEO[0]);
   const [modalKecamatan, setModalKecamatan] = useState<KecamatanData | null>(null);
-  const [entries, setEntries] = useState<SheetEntry[]>(() => getStoredRecords(INITIAL_SHEET_DATA));
+  
+  // Starts completely clean (0 data) unless user adds real entries
+  const [entries, setEntries] = useState<SheetEntry[]>(() => getStoredRecords());
   const [isInputModalOpen, setIsInputModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Sync to localStorage
+  // Sync entries to localStorage
   useEffect(() => {
     saveStoredRecords(entries);
   }, [entries]);
 
+  // 1. ADD / CREATE
   const handleAddEntry = (newEntry: SheetEntry) => {
     setEntries(prev => [newEntry, ...prev]);
+  };
+
+  // 2. UPDATE / EDIT
+  const handleUpdateEntry = (updatedEntry: SheetEntry) => {
+    setEntries(prev => prev.map(e => (e.id === updatedEntry.id ? updatedEntry : e)));
+  };
+
+  // 3. DELETE
+  const handleDeleteEntry = (id: string) => {
+    setEntries(prev => prev.filter(e => e.id !== id));
+  };
+
+  // 4. CLEAR ALL / KOSONGKAN
+  const handleClearAll = () => {
+    if (window.confirm('Apakah Anda yakin ingin mengosongkan semua data pendataan di web?')) {
+      setEntries([]);
+      clearAllLocalRecords();
+    }
   };
 
   const handleScrollToMap = () => {
@@ -69,16 +90,20 @@ export default function App() {
         <HeroSection
           onScrollToMap={handleScrollToMap}
           onScrollToData={handleScrollToData}
+          onOpenInputModal={() => setIsInputModalOpen(true)}
+          entries={entries}
         />
 
         {/* Data Utama Kawasan */}
-        <DataUtamaKawasan />
+        <DataUtamaKawasan entries={entries} />
 
         {/* Interactive Leaflet Map (3 modes: Satelit, Topografi, Jalan) */}
         <InteractiveMap
           onSelectKecamatan={setSelectedKecamatan}
           selectedKecamatan={selectedKecamatan}
           onOpenDetailModal={setModalKecamatan}
+          onOpenInputForDistrict={handleOpenInputForDistrict}
+          entries={entries}
         />
 
         {/* Komoditas Unggulan */}
@@ -87,10 +112,13 @@ export default function App() {
         {/* Infrastruktur Kawasan */}
         <InfrastrukturKawasan />
 
-        {/* Admin Sheet Panel & Webhook Sync */}
+        {/* Admin Sheet Panel & Webhook Sync (Full CRUD: Insert, Edit, Delete) */}
         <AdminSheetPanel
           entries={entries}
           onAddEntry={handleAddEntry}
+          onUpdateEntry={handleUpdateEntry}
+          onDeleteEntry={handleDeleteEntry}
+          onClearAll={handleClearAll}
           isInputModalOpen={isInputModalOpen}
           setIsInputModalOpen={setIsInputModalOpen}
           isSettingsOpen={isSettingsOpen}
@@ -103,6 +131,7 @@ export default function App() {
         kecamatan={modalKecamatan}
         onClose={() => setModalKecamatan(null)}
         onInputForDistrict={handleOpenInputForDistrict}
+        entries={entries}
       />
 
       {/* Footer Banner */}
